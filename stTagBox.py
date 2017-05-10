@@ -3,6 +3,7 @@
 # -*- Python version: 3.6.1 -*-
 
 import os
+import random
 import numpy as np
 from PIL import Image
 import matplotlib.path as mplPath
@@ -47,25 +48,28 @@ class TagBox():
 
     def tag2array(self, tag, array_size):
         (xbox, ybox, content) = tag
-        array = np.zeros(array_size, dtype=np.int)
+        array = np.zeros(np.array(array_size).T, dtype=np.int)
         xy = np.array([xbox.T, ybox.T]).T
         for i in range(0, len(xy)):
             maxx = max(xbox[i])
-            maxy = max(ybox[i])         
+            maxy = max(ybox[i])
             minx = min(xbox[i])
             miny = min(ybox[i])
-            if (maxx > array_size[0]):
-                maxx = array_size[0]
-            if (maxy > array_size[1]):
-                maxy = array_size[1]
+            # print([len(array), len(array[0])])
+            if (maxx > array_size[1]):
+                maxx = array_size[1]
+            if (maxy > array_size[0]):
+                maxy = array_size[0]
             if (minx < 0):
                 minx = 0
             if (miny < 0):
                 miny = 0
+            # print([minx, maxx, miny, maxy])
             pth = mplPath.Path(xy[i])
             for x in range(minx, maxx):
                 for y in range(miny, maxy):
                     if (pth.contains_point((x, y))):
+                        # print([y, x])
                         array[y][x] = 1
         return array.flatten()
 
@@ -91,9 +95,21 @@ mib = MiniImageBox()
 
 def get_data(picname, picpath):
     im = mib.load_image(picname, picpath, "L")
+    # print(im.size)
     imgarr = mib.image2nparray(im).flatten()
     tagarr = tb.get_tag_array(picname, picpath, np.array(im.size) // 4)
     return imgarr, tagarr
+
+def walk_path(path, randpick = None):
+    picset = []
+    for rt, dr, fs in os.walk(path):
+        for fn in fs:
+            if (".jpg") in fn:
+                picset.append(fn)
+    if randpick:
+        picset = random.sample(picset, randpick)
+    return picset
+
 
 if __name__ == "__main__":
     pass
