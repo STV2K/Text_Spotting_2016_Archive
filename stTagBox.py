@@ -9,6 +9,9 @@ import matplotlib.path as mplPath
 
 _OLD_TAG_PATH = "./pics_ann/tag_result/"
 
+tb = TagBox()
+mib = MiniImageBox()
+
 class TagBox():
 
     def load_tag_old(self, picname):
@@ -72,6 +75,24 @@ class TagBox():
     def get_tag_array(self, tagfile, filepath, array_size):
         tag = self.load_tag(tagfile, filepath)
         return self.tag2array(tag, array_size)
+
+class MiniImageBox():
+
+    def load_image(self, picname, picpath, mode = None):
+        im = Image.open(picpath + picname)
+        if (mode):
+            # "1" for monochrome, "L" for greyscale, "LA" for "L" with alpha
+            im = im.convert(mode)
+        return im
+
+    def image2nparray(self, img):
+        return np.array(img, dtype=np.uint8)
+
+def get_data(picname, picpath):
+    im = mib.load_image(picname, picpath, "L")
+    imgarr = mib.image2nparray(im).flatten()
+    tagarr = tb.get_tag_array(picname, picpath, im.size)
+    return imgarr, tagarr
 
 if __name__ == "__main__":
     pass
