@@ -20,7 +20,7 @@ from stLogging import stLogger
 
 _TRAINSET_PATH = ["./stv2k_train/"]
 _TESTSET_PATH = ["./stv2k_test/"]
-_TAG_PATH = "./pics_ann/tag_result/"
+_OLD_TAG_PATH = "./pics_ann/tag_result/"
 _OUTPUT_PERFIX = "./image_out/"
 
 __TEST_PICNAME = ["STV2K_tr_1203.jpg",
@@ -55,7 +55,7 @@ class ImageBox():
         xbox = []
         ybox = []
         content = []
-        with open(_TAG_PATH + picname + ".txt", "r") as t:
+        with open(_OLD_TAG_PATH + picname + ".txt", "r") as t:
             text = ' '.join(t.readline().split()).split(";")
             assert(text[0].replace("\t", "").split(" ")[0] == picname)
             text[0] = text[0][text[0].find(" "):-1]
@@ -225,19 +225,21 @@ class ImageBox():
         img = Image.fromarray(self.fill_area(img, tag, self.blank_tag_filter(tag, True)))
         for i in range(0, len(boxset)):
             tagn = self.filter_croped_tag(tag, boxset[i])
-            # print(tagn)
-            if (len(tagn[0])):
+            tagf = self.blank_tag_filter(tagn)
+            if (len(tagf[0])):
                 imn = self.fill_area(self.crop_to_box(img, boxset[i]), tagn, self.blank_tag_filter(tagn, True))
                 Image.fromarray(imn).save(_OUTPUT_PERFIX + picpath + "crop" + str(i) + "-" + picname)
-                self.save_tag(self.blank_tag_filter(tagn), "crop" + str(i) + "-" + picname.replace(".jpg", ".txt"), picpath)
+                self.save_tag(tagf, "crop" + str(i) + "-" + picname.replace(".jpg", ".txt"), picpath)
 
     def scale_with_tag(self, picname, picpath):
         img = self.load_image(picname, picpath, 'L')
         tag = self.load_tag(picname, picpath)
         shrimg, shrtag = self.fitting_with_tag(img, tag)
         shrimg = self.fill_area(shrimg, shrtag, self.filter_gen(shrtag))
-        Image.fromarray(shrimg).save(_OUTPUT_PERFIX + picpath + "scale-" + picname)
-        self.save_tag(self.blank_tag_filter(shrtag), "scale-" + picname.replace(".jpg", ".txt"), picpath)
+        shrtag = self.filter_tag(shrtag, self.filter_gen(shrtag))
+        if (len(shrtag[0])):
+            Image.fromarray(shrimg).save(_OUTPUT_PERFIX + picpath + "scale-" + picname)
+            self.save_tag(self.blank_tag_filter(shrtag), "scale-" + picname.replace(".jpg", ".txt"), picpath)
 
     def fitting_with_tag(self, img, tag, maxLength = 256):
         sim = self.scale_to_fit(img, maxLength)
