@@ -98,12 +98,12 @@ class TagBox():
 
     def show_saliency_map(self, saliency_array, exp_size = (48, 64)):
         # May need normalize here
-        saliency_array = np.array(saliency_array, dtype = np.uint8)
+        saliency_array = np.array(saliency_array, dtype = np.float)
         maxv = max(saliency_array)
         minv = min(saliency_array)
         saliency_array += - minv
-        saliency_array //= maxv - minv
-        slcim = Image.fromarray((saliency_array * 255).reshape(exp_size)).convert("L")
+        saliency_array /= maxv - minv
+        slcim = Image.fromarray((saliency_array * 255).astype(np.uint8).reshape(exp_size)).convert("L")
         slcim.show()
 
 class MiniImageBox():
